@@ -1,0 +1,20 @@
+atomicwrites==1.1.5
+attrs==18.1.0
+click==6.7
+Flask==1.0.2
+itsdangerous==0.24
+Jinja2==2.10
+MarkupSafe==1.0
+more-itertools==4.2.0
+-e git+git@github.com:HDE-internship/my_twitter.git@18c6182aed009aaf8f974dc1a8325cac00fa08d9#egg=my_twitter
+mypy==0.610
+pluggy==0.6.0
+py==1.5.3
+pytest==3.6.2
+python-dateutil==2.7.3
+python-mimeparse==1.6.0
+pytz==2018.4
+redis==2.10.6
+six==1.11.0
+typed-ast==1.1.0
+Werkzeug==0.14.1
