@@ -60,4 +60,8 @@ def handle_create():
 
 def main():
     minio_client.create_bucket(CONFIG.MINIO_BUCKET)
+    from . import auth
+
+    app.register_blueprint(auth.bp)
+    app.add_url_rule("/", endpoint="index")
     app.run()
