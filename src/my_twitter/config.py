@@ -41,5 +41,11 @@ class Config(object):
     MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY")
     MINIO_SECURE = os.environ.get("MINIO_SECURE")
     MINIO_BUCKET = os.environ.get("MINIO_BUCKET")
+
     REDIS_PORT = os.environ.get("REDIS_PORT")
     REDIS_URL = os.environ.get("REDIS_URL")
+
+    REDIS_TWEET = "Tweet"
+    REDIS_USER = "User"
+    REDIS_FOLLOWER = "Follower"
+    REDIS_FOLLOWING = "Following"

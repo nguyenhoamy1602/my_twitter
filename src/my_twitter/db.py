@@ -30,7 +30,7 @@ def close_db(e=None):
 def init_db():
     """Clear existing data and create new tables."""
     db = get_db()
-    db.flushdb()
+    db.flushall()
 
 
 @click.command("init-db")

@@ -1,10 +1,12 @@
-class User(object):
-    """ encapsulate the user as an object """
+from flask import Blueprint, jsonify
 
-    def __init__(self, email, name):
-        """ instantiate the class """
-        self.key = None
-        self.values = {}
-        self._validate_args(**kwargs)
-        self._set_key(kwargs[KEY_NAME])
-        self._set_values()
+from my_twitter.config import Config
+from my_twitter.db import get_db
+
+bp = Blueprint("user", __name__)
+
+
+@bp.route("/", methods=["GET"])
+def get_user():
+    db = get_db()
+    return jsonify({Config.REDIS_USER: db.hgetall(Config.REDIS_USER)})

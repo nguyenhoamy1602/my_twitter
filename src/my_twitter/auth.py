@@ -15,6 +15,9 @@ from flask import (
     jsonify,
 )
 
+from my_twitter.config import Config
+from my_twitter.db import get_db
+
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 import requests
@@ -59,38 +62,36 @@ def login_required(view):
 def load_logged_in_user():
     """If a user id is stored in the session, load the user object from
     the database into ``g.user``."""
-    user_id = session.get("user_id")
-
-    if user_id is None:
+    if session.get("credentials"):
+        g.user = get_user()[0]
+    else:
         g.user = None
-    # else:
-    #     g.user = db.
 
 
-@bp.route("/test")
-def test_api_request():
+def get_username(client_id):
+    return get_db().hget(Config.REDIS_USER, client_id)
+
+
+def get_user():
     if "credentials" not in session:
         return redirect("authorize")
 
     # Load credentials from the session.
     credentials = google.oauth2.credentials.Credentials(**session["credentials"])
-
-    # drive = googleapiclient.discovery.build(
-    #     "drive", "v3", credentials=credentials
-    # )
     plus = googleapiclient.discovery.build("plus", "v1", credentials=credentials)
-    user = plus.get(userId="me").execute()
-    print("ID: " + user["id"])
-    print("Display name: " + user["displayName"])
+    user = plus.people().get(userId="me").execute()
+    return user["id"], user["displayName"], user["image"]["url"]
 
-    # files = drive.files().list().execute()
 
-    # Save credentials back to session in case access token was refreshed.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
-    session["credentials"] = credentials_to_dict(credentials)
+def create_user(client_id, username, pic):
+    db = get_db()
+    follower = "%s:%s" % (client_id, Config.REDIS_FOLLOWER)
+    following = "%s:%s" % (client_id, Config.REDIS_FOLLOWING)
 
-    return jsonify(id=user["id"], name=user["displayName"])
+    db.hset(Config.REDIS_USER, client_id, username)
+
+    db.hset(Config.REDIS_FOLLOWER, follower, "")
+    db.hset(Config.REDIS_FOLLOWER, following, "")
 
 
 @bp.route("/authorize")
@@ -137,38 +138,49 @@ def oauth2callback():
     #              credentials in a persistent database instead.
     credentials = flow.credentials
     session["credentials"] = credentials_to_dict(credentials)
-
-    return redirect(url_for("auth.test_api_request"))
-
-
-@bp.route("/revoke")
-def revoke():
-    if "credentials" not in session:
-        return (
-            'You need to <a href="/authorize">authorize</a> before '
-            + "testing the code to revoke credentials."
-        )
-
-    credentials = google.oauth2.credentials.Credentials(**session["credentials"])
-
-    revoke = requests.post(
-        "https://accounts.google.com/o/oauth2/revoke",
-        params={"token": credentials.token},
-        headers={"content-type": "application/x-www-form-urlencoded"},
-    )
-
-    status_code = getattr(revoke, "status_code")
-    if status_code == 200:
-        return "Credentials successfully revoked." + print_index_table()
+    user_id, username, pic = get_user()
+    if get_username(user_id):
+        g.user = username
     else:
-        return "An error occurred." + print_index_table()
+        create_user(user_id, username, pic)
+    return redirect(url_for("user.get_user"))
 
 
-@bp.route("/clear")
-def clear_credentials():
-    if "credentials" in session:
-        del session["credentials"]
-    return "Credentials have been cleared.<br><br>" + print_index_table()
+@bp.route("/logout")
+def logout():
+    """Clear the current session, including the stored user id."""
+    session.clear()
+    return redirect(url_for("index"))
+
+
+# @bp.route("/revoke")
+# def revoke():
+#     if "credentials" not in session:
+#         return (
+#             'You need to <a href="/authorize">authorize</a> before '
+#             + "testing the code to revoke credentials."
+#         )
+#
+#     credentials = google.oauth2.credentials.Credentials(**session["credentials"])
+#
+#     revoke = requests.post(
+#         "https://accounts.google.com/o/oauth2/revoke",
+#         params={"token": credentials.token},
+#         headers={"content-type": "application/x-www-form-urlencoded"},
+#     )
+#
+#     status_code = getattr(revoke, "status_code")
+#     if status_code == 200:
+#         return "Credentials successfully revoked."
+#     else:
+#         return "An error occurred."
+#
+#
+# @bp.route("/clear")
+# def clear_credentials():
+#     if "credentials" in session:
+#         del session["credentials"]
+#     return "Credentials have been cleared.<br><br>"
 
 
 def credentials_to_dict(credentials):
@@ -180,27 +192,3 @@ def credentials_to_dict(credentials):
         "client_secret": credentials.client_secret,
         "scopes": credentials.scopes,
     }
-
-
-def print_index_table():
-    return (
-        "<table>"
-        + '<tr><td><a href="/test">Test an API request</a></td>'
-        + "<td>Submit an API request and see a formatted JSON response. "
-        + "    Go through the authorization flow if there are no stored "
-        + "    credentials for the user.</td></tr>"
-        + '<tr><td><a href="/authorize">Test the auth flow directly</a></td>'
-        + "<td>Go directly to the authorization flow. If there are stored "
-        + "    credentials, you still might not be prompted to reauthorize "
-        + "    the application.</td></tr>"
-        + '<tr><td><a href="/revoke">Revoke current credentials</a></td>'
-        + "<td>Revoke the access token associated with the current user "
-        + "    session. After revoking credentials, if you go to the test "
-        + "    page, you should see an <code>invalid_grant</code> error."
-        + "</td></tr>"
-        + '<tr><td><a href="/clear">Clear Flask session credentials</a></td>'
-        + "<td>Clear the access token currently stored in the user session. "
-        + '    After clearing the token, if you <a href="/test">test the '
-        + "    API request</a> again, you should go back to the auth flow."
-        + "</td></tr></table>"
-    )
