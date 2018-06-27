@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import functools
+import os
 
 from flask import (
     Blueprint,
@@ -24,13 +25,16 @@ import googleapiclient.discovery
 
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
-CLIENT_SECRETS_FILE = "client_secret.json"
+CLIENT_SECRETS_FILE = os.path.join(os.getcwd(), "src/client_secret.json")
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
-SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
-API_SERVICE_NAME = "drive"
-API_VERSION = "v2"
+SCOPES = [
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/plus.me",
+    "email",
+]
 
 # Note: A secret key is included in the sample so that it works.
 # If you use this code in your application, replace this with a truly secret
@@ -38,9 +42,29 @@ API_VERSION = "v2"
 # app.secret_key = 'REPLACE ME - this value is here as a placeholder.'
 
 
-@bp.route("/")
-def index():
-    return print_index_table()
+def login_required(view):
+    """View decorator that redirects anonymous users to the login page."""
+
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for("auth.authorize"))
+
+        return view(**kwargs)
+
+    return wrapped_view
+
+
+@bp.before_app_request
+def load_logged_in_user():
+    """If a user id is stored in the session, load the user object from
+    the database into ``g.user``."""
+    user_id = session.get("user_id")
+
+    if user_id is None:
+        g.user = None
+    # else:
+    #     g.user = db.
 
 
 @bp.route("/test")
@@ -51,28 +75,33 @@ def test_api_request():
     # Load credentials from the session.
     credentials = google.oauth2.credentials.Credentials(**session["credentials"])
 
-    drive = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials
-    )
+    # drive = googleapiclient.discovery.build(
+    #     "drive", "v3", credentials=credentials
+    # )
+    plus = googleapiclient.discovery.build("plus", "v1", credentials=credentials)
+    user = plus.get(userId="me").execute()
+    print("ID: " + user["id"])
+    print("Display name: " + user["displayName"])
 
-    files = drive.files().list().execute()
+    # files = drive.files().list().execute()
 
     # Save credentials back to session in case access token was refreshed.
     # ACTION ITEM: In a production app, you likely want to save these
     #              credentials in a persistent database instead.
     session["credentials"] = credentials_to_dict(credentials)
 
-    return jsonify(**files)
+    return jsonify(id=user["id"], name=user["displayName"])
 
 
 @bp.route("/authorize")
 def authorize():
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
+
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES
     )
 
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
+    flow.redirect_uri = url_for("auth.oauth2callback", _external=True)
 
     authorization_url, state = flow.authorization_url(
         # Enable offline access so that you can refresh an access token without
@@ -97,7 +126,7 @@ def oauth2callback():
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE, scopes=SCOPES, state=state
     )
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
+    flow.redirect_uri = url_for("auth.oauth2callback", _external=True)
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens.
     authorization_response = request.url
@@ -109,7 +138,7 @@ def oauth2callback():
     credentials = flow.credentials
     session["credentials"] = credentials_to_dict(credentials)
 
-    return redirect(url_for("test_api_request"))
+    return redirect(url_for("auth.test_api_request"))
 
 
 @bp.route("/revoke")
