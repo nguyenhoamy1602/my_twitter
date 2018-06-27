@@ -28,7 +28,7 @@ def main():
     app.register_blueprint(tweet.bp)
     app.register_blueprint(user.bp)
 
-    # app.add_url_rule("/", endpoint="index")
+    app.add_url_rule("/", endpoint="index")
     app.secret_key = Config.SECRET_KEY
 
     app.run()

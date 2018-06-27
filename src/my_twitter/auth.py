@@ -63,7 +63,8 @@ def load_logged_in_user():
     """If a user id is stored in the session, load the user object from
     the database into ``g.user``."""
     if session.get("credentials"):
-        g.user = get_user()[0]
+        id, username, pic = get_user()
+        g.user = {"id": id, "name": username}
     else:
         g.user = None
 
@@ -143,7 +144,7 @@ def oauth2callback():
         g.user = username
     else:
         create_user(user_id, username, pic)
-    return redirect(url_for("user.get_user"))
+    return redirect(url_for("index"))
 
 
 @bp.route("/logout")
