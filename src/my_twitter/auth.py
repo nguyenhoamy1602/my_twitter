@@ -17,6 +17,8 @@ from flask import (
 
 from my_twitter.config import Config
 from my_twitter.db import get_db
+from my_twitter.models import User
+from my_twitter.utils.token import generate_token, verify_token
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -45,57 +47,32 @@ SCOPES = [
 # app.secret_key = 'REPLACE ME - this value is here as a placeholder.'
 
 
-def login_required(view):
-    """View decorator that redirects anonymous users to the login page."""
-
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for("auth.authorize"))
-
-        return view(**kwargs)
-
-    return wrapped_view
-
-
-@bp.before_app_request
-def load_logged_in_user():
-    """If a user id is stored in the session, load the user object from
-    the database into ``g.user``."""
-    if session.get("credentials"):
-        id, username, pic = get_user()
-        g.user = {"id": id, "name": username}
-    else:
-        g.user = None
-
-
-def get_username(client_id):
-    return get_db().hget(Config.REDIS_USER, client_id)
+# def login_required(view):
+#     """View decorator that redirects anonymous users to the login page."""
+#
+#     @functools.wraps(view)
+#     def wrapped_view(**kwargs):
+#         if g.user is None:
+#             return redirect(url_for("auth.authorize"))
+#
+#         return view(**kwargs)
+#
+#     return wrapped_view
+#
+#
+# @bp.before_app_request
+# def load_logged_in_user():
+#     """If a user id is stored in the session, load the user object from
+#     the database into ``g.user``."""
+#     if session.get("credentials"):
+#         try:
+#             id, username, pic = get_user()
+#             g.user = {"id": id, "name": username}
+#         except:
+#             g.user = None
 
 
-def get_user():
-    if "credentials" not in session:
-        return redirect("authorize")
-
-    # Load credentials from the session.
-    credentials = google.oauth2.credentials.Credentials(**session["credentials"])
-    plus = googleapiclient.discovery.build("plus", "v1", credentials=credentials)
-    user = plus.people().get(userId="me").execute()
-    return user["id"], user["displayName"], user["image"]["url"]
-
-
-def create_user(client_id, username, pic):
-    db = get_db()
-    follower = "%s:%s" % (client_id, Config.REDIS_FOLLOWER)
-    following = "%s:%s" % (client_id, Config.REDIS_FOLLOWING)
-
-    db.hset(Config.REDIS_USER, client_id, username)
-
-    db.hset(Config.REDIS_FOLLOWER, follower, "")
-    db.hset(Config.REDIS_FOLLOWER, following, "")
-
-
-@bp.route("/authorize")
+@bp.route("/get_token")
 def authorize():
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
 
@@ -139,12 +116,23 @@ def oauth2callback():
     #              credentials in a persistent database instead.
     credentials = flow.credentials
     session["credentials"] = credentials_to_dict(credentials)
-    user_id, username, pic = get_user()
-    if get_username(user_id):
-        g.user = username
+    user_id, user_name, user_pic = get_user_detail()
+    user = User.get_user(user_id, user_name, user_pic)
+    print("user:" + user_name)
+    if user:
+        return jsonify(token=generate_token(user))
+    return jsonify(error=True), 403
+
+
+@bp.route("/is_token_valid", methods=["POST"])
+def is_token_valid():
+    incoming = request.get_json()
+    is_valid = verify_token(incoming["token"])
+
+    if is_valid:
+        return jsonify(token_is_valid=True)
     else:
-        create_user(user_id, username, pic)
-    return redirect(url_for("index"))
+        return jsonify(token_is_valid=False), 403
 
 
 @bp.route("/logout")
@@ -193,3 +181,14 @@ def credentials_to_dict(credentials):
         "client_secret": credentials.client_secret,
         "scopes": credentials.scopes,
     }
+
+
+def get_user_detail():
+    if "credentials" not in session:
+        return redirect("authorize")
+
+    # Load credentials from the session.
+    credentials = google.oauth2.credentials.Credentials(**session["credentials"])
+    plus = googleapiclient.discovery.build("plus", "v1", credentials=credentials)
+    user = plus.people().get(userId="me").execute()
+    return user["id"], user["displayName"], user["image"]["url"]

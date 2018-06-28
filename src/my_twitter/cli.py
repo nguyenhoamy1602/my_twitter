@@ -5,11 +5,12 @@ from flask import Flask
 from my_twitter.config import Config
 
 from my_twitter.minio import MyMinio
+from flask_cors import CORS, cross_origin
 
 
 def main():
 
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder="./static/dist", template_folder="./static")
 
     from my_twitter import db
 
@@ -30,5 +31,6 @@ def main():
 
     app.add_url_rule("/", endpoint="index")
     app.secret_key = Config.SECRET_KEY
+    CORS(app)
 
     app.run()

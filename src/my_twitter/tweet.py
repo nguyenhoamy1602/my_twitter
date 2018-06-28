@@ -1,26 +1,17 @@
 import json
 
-from flask import (
-    Blueprint,
-    flash,
-    g,
-    redirect,
-    render_template,
-    request,
-    url_for,
-    jsonify,
-)
+from flask import Blueprint, g, request, jsonify
 
-from my_twitter.auth import login_required
 from my_twitter.config import Config
 from my_twitter.db import get_db
 from my_twitter.minio import MyMinio
+from my_twitter.models import User
 
 bp = Blueprint("tweet", __name__, url_prefix="/tweet")
 
 
 @bp.route("/", methods=["POST", "GET", "PUT", "DELETE"])
-@login_required
+# @login_required
 def handle_tweet():
     db = get_db()
     minio_client = MyMinio.get_minio()
@@ -46,17 +37,20 @@ def handle_tweet():
         return "Tweet not found", 404
 
     else:
-
-        return jsonify({Config.REDIS_TWEET: db.hgetall(Config.REDIS_TWEET)})
+        tweet_list = []
+        for i in db.hgetall(Config.REDIS_TWEET):
+            if i != "count":
+                tweet_list.append(User.tweet_jsonify(i))
+        return jsonify(tweet_list)
 
 
 @bp.route("/post", methods=["POST"])
-@login_required
+# @login_required
 def post_tweet():
     db = get_db()
     minio_client = MyMinio.get_minio()
     tweet = request.form
-    tweet_id = "%s:%s" % (get_id(db, Config.REDIS_TWEET), g.user.id)
+    tweet_id = "%s:%s" % (get_id(db, Config.REDIS_TWEET), "108954821222298556249")
     db.hset(Config.REDIS_TWEET, tweet_id, tweet["text"])
     if "pic" in request.files:
         minio_client.upload_pic(Config.MINIO_BUCKET, tweet_id, request.files["pic"])

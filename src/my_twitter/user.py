@@ -1,21 +1,33 @@
-from flask import Blueprint, jsonify
+import json
 
-from my_twitter.auth import login_required
+import flask
+
+
 from my_twitter.config import Config
 from my_twitter.db import get_db
+from my_twitter.models import User
 
-bp = Blueprint("user", __name__)
+bp = flask.Blueprint("user", __name__)
 
 
 @bp.route("/", methods=["GET"])
+def index():
+    return flask.render_template("index.html")
+
+
+@bp.route("/home", methods=["GET"])
 def home():
     return print_index_table()
 
 
-@login_required
+# @login_required
+@bp.route("/user", methods=["GET"])
 def get_user():
     db = get_db()
-    return jsonify({Config.REDIS_USER: db.hgetall(Config.REDIS_USER)})
+    user_list = []
+    for i in db.hgetall(Config.REDIS_USER):
+        user_list.append(User.user_jsonify(i))
+    return flask.jsonify(user_list), 200
 
 
 def print_index_table():
