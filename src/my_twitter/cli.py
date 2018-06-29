@@ -9,8 +9,8 @@ from flask_cors import CORS, cross_origin
 
 app = Flask(__name__, static_folder="./static/dist", template_folder="./static")
 
-
-def main():
+# def main():
+if __name__ == "__main__":
 
     from my_twitter import db
 
