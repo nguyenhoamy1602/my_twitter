@@ -1,17 +1,17 @@
 import { ADD_PERSON } from './types';
 import newToast from './new_toast';
 
-export default function addPerson(person) {
-  const message = `You've just added ${person.name} to the Most Wanted List.`;
+export default function addPerson(tweet) {
+  const message = `You've just added ${tweet.name} to the Most Wanted List.`;
   return dispatch => {
-    dispatch(addPersonAsync(person));
+    dispatch(addPersonAsync(tweet));
     dispatch(newToast(message))
   }
 }
 
-function addPersonAsync(person){
+function addPersonAsync(tweet){
   return {
     type: ADD_PERSON,
-    payload: person
+    payload: tweet
   };
 }

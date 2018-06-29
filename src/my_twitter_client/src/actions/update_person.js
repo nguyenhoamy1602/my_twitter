@@ -1,14 +1,14 @@
 import { UPDATE_PERSON } from './types';
 
-export default function updatePerson(person) {
+export default function updatePerson(tweet) {
   return dispatch => {
-    dispatch(updatePersonAsync(person));
+    dispatch(updatePersonAsync(tweet));
   }
 }
 
-function updatePersonAsync(person){
+function updatePersonAsync(tweet){
   return {
     type: UPDATE_PERSON,
-    payload: person
+    payload: tweet
   };
 }

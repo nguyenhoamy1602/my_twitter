@@ -4,7 +4,7 @@ from flask import Blueprint, g, request, jsonify
 
 from my_twitter.config import Config
 from my_twitter.db import get_db
-from my_twitter.minio import MyMinio
+from my_twitter.miniodb import MyMinio
 from my_twitter.models import User
 
 bp = Blueprint("tweet", __name__, url_prefix="/tweet")

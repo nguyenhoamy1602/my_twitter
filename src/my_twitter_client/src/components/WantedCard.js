@@ -10,7 +10,7 @@ class WantedCard extends Component {
     super(props);
     this.state = {
       editReason: false,
-      reason: props.person.reason
+      reason: props.tweet.reason
     };
     this.toggleEdit = this.toggleEdit.bind(this);
     this.handleReasonChange = this.handleReasonChange.bind(this);
@@ -29,32 +29,32 @@ class WantedCard extends Component {
   }
   handleUpdatePerson() {
     const update = {
-      name: this.props.person.name,
-      image: this.props.person.image,
-      reward: this.props.person.reward,
+      name: this.props.tweet.name,
+      image: this.props.tweet.image,
+      user: this.props.tweet.user,
       reason: this.state.reason
     }
     this.props.updatePerson(update);
     this.toggleEdit();
   }
   handleDeletePerson() {
-    this.props.deletePerson(this.props.person);
+    this.props.deletePerson(this.props.tweet);
   }
   render() {
-    const person = this.props.person;
-    const title = `Image of the very wanted person, ${person.name}`;
+    const tweet = this.props.tweet;
+    const title = `Image of the very wanted tweet, ${tweet.name}`;
     return (
       <div className="card">
         <button
           className="btn btn-clear tooltip"
-          data-tooltip="Delete because person has been captured."
+          data-tooltip="Delete because tweet has been captured."
           onClick={this.handleDeletePerson}></button>
         <div className="card-header">
           <figure
             className="avatar avatar-xl tooltip" data-tooltip={title}>
-            <img alt={title} src={person.image} />
+            <img alt={title} src={tweet.image} />
           </figure>
-          <h4 className="card-title">{person.name}</h4>
+          <h4 className="card-title">{tweet.name}</h4>
         </div>
         <Note
           toggleEdit={this.toggleEdit}
@@ -62,8 +62,8 @@ class WantedCard extends Component {
           edit={this.state.editReason}
           handleReasonChange={this.handleReasonChange}
           content={this.state.reason} />
-          <small className="reward">
-            <span>Reward for capture:</span> {person.reward}
+          <small className="user">
+            <span>Author:</span> {tweet.user}
           </small>
       </div>
     );

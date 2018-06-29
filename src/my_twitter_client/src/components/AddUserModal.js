@@ -39,7 +39,7 @@ class AddUserModal extends Component {
                 <div className="form-group">
                   <label className="form-label">Reward for delivery to police station:</label>
                   <input
-                    value={this.props.reward}
+                    value={this.props.user}
                     onChange={this.props.onRewardChange}
                     className="form-input"
                     type="text"

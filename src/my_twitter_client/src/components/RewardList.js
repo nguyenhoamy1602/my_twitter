@@ -8,7 +8,7 @@ class RewardList extends Component {
         return (
           <div key={r.name} className="card">
             <div className="card-body">
-              <p>{r.reward}</p>
+              <p>{r.user}</p>
             </div>
           </div>
         );
@@ -18,7 +18,7 @@ class RewardList extends Component {
   render() {
     return (
       <div>
-        <h2>Reward List:</h2>
+        <h2>User List:</h2>
         {this.renderRewards()}
       </div>
     );

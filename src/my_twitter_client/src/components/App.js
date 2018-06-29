@@ -39,8 +39,8 @@ class App extends Component {
   }
   renderUsers() {
     if(this.props.wantedPeople) {
-      return this.props.wantedPeople.map(person => {
-        return <WantedCard key={person.name} person={person} />;
+      return this.props.wantedPeople.map(tweet => {
+        return <WantedCard key={tweet.name} tweet={tweet} />;
       });
     } else {
       return <LoadingSpinner />;
@@ -103,13 +103,13 @@ class App extends Component {
     });
   }
   handlePersonCreation() {
-    const person = {
+    const tweet = {
       name: this.state.newPersonName,
       image: `https://api.adorable.io/avatars/face/eyes${this.state.newPersonEyes}/nose${this.state.newPersonNose}/mouth${this.state.newPersonMouth}/${this.state.newPersonSkin.slice(1)}`,
       reason: this.state.newPersonReason,
-      reward: this.state.newPersonReward
+      user: this.state.newPersonReward
     };
-    this.props.addPerson(person);
+    this.props.addPerson(tweet);
     this.clearFormAndCloseModal();
   }
   handleClearToast() {
@@ -127,7 +127,7 @@ class App extends Component {
           <div className="columns">
             <div className="column col-md-6">
                 <h2>
-                  Most Wanted:
+                  Recent Tweets:
                   <button
                     className="btn btn-primary"
                     onClick={this.toggleModalState}>Add</button>
@@ -153,7 +153,7 @@ class App extends Component {
           onNameChange={this.handleNewPersonNameChange}
           name={this.state.newPersonName}
           reason={this.state.newPersonReason}
-          reward={this.state.newPersonReward}
+          user={this.state.newPersonReward}
           eyes={this.state.newPersonEyes}
           nose={this.state.newPersonNose}
           mouth={this.state.newPersonMouth}

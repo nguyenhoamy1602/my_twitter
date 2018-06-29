@@ -46,11 +46,11 @@ textarea.form-input {
   font-size: 1.6rem;
   font-weight: 300;
 }
-.reward {
+.user {
   margin-left: 1.5rem;
   font-weight: 300;
 }
-.reward span {
+.user span {
   font-weight: 400;
 }
 .modal-container .modal-body {

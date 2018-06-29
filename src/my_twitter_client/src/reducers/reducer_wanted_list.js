@@ -13,15 +13,15 @@ export default function(state=[], action) {
       return [action.payload, ...state];
 
     case UPDATE_PERSON:
-      return state.map(person => {
-        if(person.name === action.payload.name) {
+      return state.map(tweet => {
+        if(tweet.name === action.payload.name) {
           return action.payload;
         }
-        return person;
+        return tweet;
       });
 
     case DELETE_PERSON:
-      return state.filter(person => person.name !== action.payload.name);
+      return state.filter(tweet => tweet.name !== action.payload.name);
 
     default:
       return state;
