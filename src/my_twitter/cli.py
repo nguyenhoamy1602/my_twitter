@@ -2,9 +2,6 @@ import os
 
 from flask import Flask
 
-from my_twitter.config import Config
-
-from my_twitter.miniodb import MyMinio
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__, static_folder="./static/dist", template_folder="./static")
@@ -13,6 +10,9 @@ app = Flask(__name__, static_folder="./static/dist", template_folder="./static")
 if __name__ == "__main__":
 
     from my_twitter import db
+    from my_twitter.config import Config
+
+    from my_twitter.miniodb import MyMinio
 
     db.init_app(app)
     # create db
