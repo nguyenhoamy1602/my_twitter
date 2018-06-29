@@ -11,15 +11,15 @@ def main():
     from my_twitter import db
     from my_twitter.config import Config
 
-    from my_twitter.miniodb import MyMinio
+    # from my_twitter.miniodb import MyMinio
 
     db.init_app(app)
     # create db
 
-    with app.app_context():
+    # with app.app_context():
 
-        minio_client = MyMinio()
-        minio_client.init_app(app)
+    # minio_client = MyMinio()
+    # minio_client.init_app(app)
 
     from my_twitter import auth, tweet, user
 
