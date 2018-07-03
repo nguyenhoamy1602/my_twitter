@@ -2,7 +2,7 @@ import { DELETE_PERSON } from './types';
 import newToast from './new_toast';
 
 export default function deletePerson(tweet) {
-  const message = `You've just captured ${tweet.name}. Go collect your user!`;
+  const message = `You've just captured ${tweet.user}. Go collect your user!`;
   return dispatch => {
     dispatch(deletePersonAsync(tweet));
     dispatch(newToast(message))

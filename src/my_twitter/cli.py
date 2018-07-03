@@ -8,13 +8,24 @@ app = Flask(__name__, static_folder="./static/dist", template_folder="./static")
 
 
 def main():
-    from my_twitter import db
+
     from my_twitter.config import Config
 
+    app.config.from_object(Config)
     # from my_twitter.miniodb import MyMinio
 
+    from my_twitter import db
+    from my_twitter import my_s3
+
     db.init_app(app)
+    with app.app_context():
+        my_s3.init_s3()
     # create db
+    # if app.testing:
+    #     redis_store = FlaskRedis.from_custom_provider(MockRedis)
+    # else:
+    #     redis_store = FlaskRedis()
+    # redis_store.init_app(app)
 
     # with app.app_context():
 
@@ -28,8 +39,9 @@ def main():
     app.register_blueprint(tweet.bp)
     app.register_blueprint(user.bp)
 
-    app.add_url_rule("/", endpoint="index")
-    app.secret_key = Config.SECRET_KEY
-    CORS(app)
+    app.add_url_rule("/api", endpoint="index")
+    # app.secret_key = Config.SECRET_KEY
+    CORS(app, resources=r"/api/*")
+    app.config["CORS_HEADERS"] = "Content-Type"
 
     app.run()

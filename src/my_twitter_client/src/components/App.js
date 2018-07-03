@@ -38,8 +38,8 @@ class App extends Component {
     this.props.getWantedList();
   }
   renderUsers() {
-    if(this.props.wantedPeople) {
-      return this.props.wantedPeople.map(tweet => {
+    if(this.props.recentTweets) {
+      return this.props.recentTweets.map(tweet => {
         return <WantedCard key={tweet.name} tweet={tweet} />;
       });
     } else {
@@ -167,7 +167,7 @@ class App extends Component {
 //connects root reducer to props
 function mapStateToProps(state) {
   return {
-    wantedPeople: state.wantedPeople,
+    recentTweets: state.recentTweets,
     toast: state.toast
   }
 }

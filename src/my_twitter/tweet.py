@@ -1,67 +1,116 @@
-import json
+import datetime
 
 from flask import Blueprint, g, request, jsonify
 
+from my_twitter import my_s3
 from my_twitter.config import Config
 from my_twitter.db import get_db
-
-# from my_twitter.miniodb import MyMinio
 from my_twitter.models import User
+from my_twitter.utils.token import requires_auth
 
-bp = Blueprint("tweet", __name__, url_prefix="/tweet")
+bp = Blueprint("tweet", __name__, url_prefix="/api/tweet")
+
+ID = "id"
+TEXT = "text"
+IMAGE = "image"
+HAS_IMAGE = "has_image"
+USER = "user"
+USER_IMAGE = "userImage"
+DATE = "date"
+TRUE = "1"
+FALSE = "0"
+NOT_FOUND = "Tweet not found"
+DATE_TIME_FORMAT = "%y-%m-%d %H:%M"
 
 
-@bp.route("/", methods=["POST", "GET", "PUT", "DELETE"])
-# @login_required
-def handle_tweet():
+@bp.route("/", methods=["DELETE"])
+@requires_auth
+def delete_tweet():
     db = get_db()
-    # minio_client = MyMinio.get_minio()
-
-    if request.method == "PUT":
-        tweet = request.form
-        user_id = tweet["id"].split(":")[1]
-        if user_id == g.user_id and db.hget(Config.REDIS_TWEET, tweet["id"]):
-            db.hset(Config.REDIS_TWEET, tweet["id"], tweet["text"])
-            # if "pic" in request.files:
-            # minio_client.upload_pic(
-            #     Config.MINIO_BUCKET, tweet["id"], request.files["pic"]
-            # )
-            return jsonify({tweet["id"]: db.hget(Config.REDIS_TWEET, tweet["id"])})
-
-        else:
-            return "Tweet not found", 404
-
-    elif request.method == "DELETE":
-        tweet_id = request.form["id"]
-        if db.hdel(Config.REDIS_TWEET, tweet_id):
-            return tweet_id + " deleted", 201
-        return "Tweet not found", 404
-
-    else:
-        tweet_list = []
-        for i in db.hgetall(Config.REDIS_TWEET):
-            if i != "count":
-                tweet_list.append(User.tweet_jsonify(i))
-        return jsonify(tweet_list)
+    tweet_id = request.form[ID]
+    if db.srem(Config.REDIS_TWEET, tweet_id):
+        if db.hget(tweet_id, HAS_IMAGE) == TRUE:
+            my_s3.delete(tweet_id)
+        db.delete(tweet_id)
+        return jsonify(message=tweet_id + " deleted"), 200
+    return jsonify(error=NOT_FOUND), 404
 
 
-@bp.route("/post", methods=["POST"])
-# @login_required
+@bp.route("/", methods=["GET", "OPTIONS"])
+@requires_auth
+def get_tweet():
+    db = get_db()
+    tweet_list = []
+    for i in db.smembers(Config.REDIS_TWEET):
+        tweet_list.append(tweet_jsonify(i))
+    return jsonify(tweet_list)
+
+
+@bp.route("/", methods=["POST"])
+@requires_auth
 def post_tweet():
-    db = get_db()
-    # minio_client = MyMinio.get_minio()
     tweet = request.form
-    tweet_id = "%s:%s" % (get_id(db, Config.REDIS_TWEET), "108954821222298556249")
-    db.hset(Config.REDIS_TWEET, tweet_id, tweet["text"])
-    # if "pic" in request.files:
-    #     minio_client.upload_pic(Config.MINIO_BUCKET, tweet_id, request.files["pic"])
-    return "Tweet created", 201
+
+    tweet_id = get_tweet_id()
+    has_image = save_pic_to_s3(request, tweet_id)
+    save_tweet_to_db(tweet_id, tweet, has_image)
+
+    return jsonify(tweet_jsonify(tweet_id)), 200
 
 
-def get_id(db, hash_name):
-    count = "count"
-    if not db.hexists(hash_name, count):
-        db.hset(hash_name, count, 1)
+@bp.route("/", methods=["PUT"])
+@requires_auth
+def update_tweet():
+    db = get_db()
+    tweet = request.form
+    tweet_id = tweet[ID]
+    if db.hgetall(tweet_id):
+        has_image = save_pic_to_s3(request, tweet_id)
+        save_tweet_to_db(tweet_id, tweet, has_image)
+        return jsonify(tweet_jsonify(tweet_id)), 200
+    return jsonify(error=NOT_FOUND), 404
+
+
+def get_id(db, key):
+    key = key + ":count"
+    if not db.exists(key):
+        db.set(key, 1)
     else:
-        db.hincrby(hash_name, count)
-    return db.hget(hash_name, count)
+        db.incr(key)
+    return db.get(key)
+
+
+def get_tweet_id():
+    db = get_db()
+    return "%s:%s" % (Config.REDIS_TWEET, get_id(db, Config.REDIS_TWEET))
+
+
+def save_pic_to_s3(request, tweet_id):
+    if IMAGE in request.files:
+        my_s3.upload(request.files[IMAGE], tweet_id)
+        return TRUE
+    return FALSE
+
+
+def save_tweet_to_db(tweet_id, tweet, has_image):
+    db = get_db()
+    db.sadd(Config.REDIS_TWEET, tweet_id)
+    db.hset(tweet_id, TEXT, tweet[TEXT])
+    db.hset(tweet_id, USER, g.current_user["name"])
+    db.hset(tweet_id, USER_IMAGE, User.get_profile_pic(g.current_user["id"]))
+    print("ID" + g.current_user["id"])
+    db.hset(tweet_id, HAS_IMAGE, has_image)
+    db.hset(tweet_id, DATE, datetime.datetime.now().strftime(DATE_TIME_FORMAT))
+
+
+def tweet_jsonify(i):
+    db = get_db()
+    image_url = my_s3.get_presigned_url(i) if db.hget(i, HAS_IMAGE) == TRUE else None
+    return {
+        ID: i,
+        USER: db.hget(i, USER),
+        USER_IMAGE: db.hget(i, USER_IMAGE),
+        TEXT: db.hget(i, TEXT),
+        IMAGE: image_url,
+        DATE: db.hget(i, DATE),
+    }

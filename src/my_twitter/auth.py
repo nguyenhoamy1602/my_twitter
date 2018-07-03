@@ -15,12 +15,13 @@ from flask import (
     jsonify,
 )
 
+from my_twitter.cli import app
 from my_twitter.config import Config
 from my_twitter.db import get_db
 from my_twitter.models import User
 from my_twitter.utils.token import generate_token, verify_token
 
-bp = Blueprint("auth", __name__, url_prefix="/auth")
+bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 import requests
 
@@ -92,7 +93,6 @@ def authorize():
 
     # Store the state so the callback can verify the auth server response.
     session["state"] = state
-
     return redirect(authorization_url)
 
 

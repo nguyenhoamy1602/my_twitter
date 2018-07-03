@@ -6,8 +6,9 @@ import flask
 from my_twitter.config import Config
 from my_twitter.db import get_db
 from my_twitter.models import User
+from my_twitter.utils.token import requires_auth
 
-bp = flask.Blueprint("user", __name__)
+bp = flask.Blueprint("user", __name__, url_prefix="/api")
 
 
 @bp.route("/", methods=["GET"])
@@ -28,6 +29,13 @@ def get_user():
     for i in db.hgetall(Config.REDIS_USER):
         user_list.append(User.user_jsonify(i))
     return flask.jsonify(user_list), 200
+
+
+# @bp.route("/follow", method=["POST"])
+# @requires_auth
+# def follow():
+#     db = get_db()
+#     user_id =
 
 
 def print_index_table():

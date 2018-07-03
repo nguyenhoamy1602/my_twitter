@@ -36,11 +36,11 @@ class Config(object):
     )
 
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    MINIO_HOST = os.environ.get("MINIO_HOST")
-    MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY")
-    MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY")
-    MINIO_SECURE = os.environ.get("MINIO_SECURE")
-    MINIO_BUCKET = os.environ.get("MINIO_BUCKET")
+    BUCKET_HOST = os.environ.get("BUCKET_HOST")
+    BUCKET_ACCESS_KEY = os.environ.get("BUCKET_ACCESS_KEY")
+    BUCKET_SECRET_KEY = os.environ.get("BUCKET_SECRET_KEY")
+    # BUCKET_SECURE = os.environ.get("MINIO_SECURE")
+    BUCKET_NAME = os.environ.get("BUCKET_NAME")
 
     REDIS_PORT = os.environ.get("REDIS_PORT")
     REDIS_URL = os.environ.get("REDIS_URL")

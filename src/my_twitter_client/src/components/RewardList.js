@@ -3,10 +3,10 @@ import {connect} from 'react-redux';
 
 class RewardList extends Component {
   renderRewards() {
-    if(this.props.wantedPeople) {
-      return this.props.wantedPeople.map(r => {
+    if(this.props.recentTweets) {
+      return this.props.recentTweets.map(r => {
         return (
-          <div key={r.name} className="card">
+          <div key={r.user} className="card">
             <div className="card-body">
               <p>{r.user}</p>
             </div>
@@ -28,7 +28,7 @@ class RewardList extends Component {
 //connects root reducer to props
 function mapStateToProps(state) {
   return {
-    wantedPeople: state.wantedPeople
+    recentTweets: state.recentTweets
   }
 }
 
