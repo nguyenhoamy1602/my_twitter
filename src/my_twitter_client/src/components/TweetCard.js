@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import updatePerson from '../actions/update_person';
-import deletePerson from '../actions/delete_person';
+import updateTweet from '../actions/update_tweet';
+import deleteTweet from '../actions/delete_tweet';
 import { Note } from './Note';
 
-class WantedCard extends Component {
+class TweetCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -14,33 +14,31 @@ class WantedCard extends Component {
       image: props.tweet.image
     };
     this.toggleEdit = this.toggleEdit.bind(this);
-    this.handleReasonChange = this.handleReasonChange.bind(this);
-    this.handleUpdatePerson = this.handleUpdatePerson.bind(this);
-    this.handleDeletePerson = this.handleDeletePerson.bind(this);
+    this.handleTextChange = this.handleTextChange.bind(this);
+    this.handleUpdateTweet = this.handleUpdateTweet.bind(this);
+    this.handleDeleteTweet = this.handleDeleteTweet.bind(this);
   }
   toggleEdit() {
     this.setState({
       editText: !this.state.editText
     })
   }
-  handleReasonChange(e) {
+  handleTextChange(e) {
     this.setState({
-      reason: e.target.value
+      text: e.target.value
     });
   }
-  handleUpdatePerson() {
-    const update = {
-      id: this.props.tweet.id,
-      image: this.props.tweet.image,
-      user: this.props.tweet.user,
-      text: this.state.text
-    }
-    this.props.updatePerson(update);
+  handleUpdateTweet() {
+    const tweet = new FormData();
+    tweet.append('id', this.props.tweet.id)
+    tweet.append('text', this.state.text)
+    this.props.updateTweet(tweet);
     this.toggleEdit();
   }
-  handleDeletePerson() {
-    this.props.deletePerson(this.props.tweet);
+  handleDeleteTweet() {
+    this.props.deleteTweet(this.props.tweet);
   }
+
 
   renderTweetImage() {
     if (this.props.tweet.image === null) {
@@ -62,7 +60,7 @@ class WantedCard extends Component {
         <button
           className="btn btn-clear tooltip"
           data-tooltip="Delete because tweet has been captured."
-          onClick={this.handleDeletePerson}></button>
+          onClick={this.handleDeleteTweet}></button>
         <div className="card-header">
           <figure
             className="avatar avatar-xl tooltip" data-tooltip={tweet.user}>
@@ -72,9 +70,9 @@ class WantedCard extends Component {
         </div>
         <Note
           toggleEdit={this.toggleEdit}
-          updatePerson={this.handleUpdatePerson}
+          updateTweet={this.handleUpdateTweet}
           edit={this.state.editText}
-          handleReasonChange={this.handleReasonChange}
+          handleTextChange={this.handleTextChange}
           content={this.state.text} />
           {this.renderTweetImage()}
           <small className="date">
@@ -90,9 +88,9 @@ class WantedCard extends Component {
 //connects redux actions to props
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    updatePerson: updatePerson,
-    deletePerson: deletePerson
+    updateTweet: updateTweet,
+    deleteTweet: deleteTweet
   }, dispatch);
 }
 
-export default connect(null, mapDispatchToProps)(WantedCard);
+export default connect(null, mapDispatchToProps)(TweetCard);

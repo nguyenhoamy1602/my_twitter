@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 
-class RewardList extends Component {
-  renderRewards() {
+class UserList extends Component {
+  renderUsers() {
     if(this.props.recentTweets) {
       return this.props.recentTweets.map(r => {
         return (
@@ -19,7 +19,7 @@ class RewardList extends Component {
     return (
       <div>
         <h2>User List:</h2>
-        {this.renderRewards()}
+        {this.renderUsers()}
       </div>
     );
   }
@@ -32,4 +32,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps, null)(RewardList);
+export default connect(mapStateToProps, null)(UserList);

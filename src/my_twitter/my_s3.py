@@ -20,12 +20,11 @@ def get_s3():
 
 
 def upload(file, key):
-    get_s3()
-    g.s3.upload_fileobj(file, app.config["BUCKET_NAME"], key)
+    get_s3().upload_fileobj(file, app.config["BUCKET_NAME"], key)
 
 
 def delete(key):
-    g.s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=key)
+    get_s3().delete_object(Bucket=app.config["BUCKET_NAME"], Key=key)
 
 
 #

@@ -6,7 +6,7 @@ export const Note = (props) => {
       <div className="card-body">
         {props.edit
           ? <textarea
-              onChange={props.handleReasonChange}
+              onChange={props.handleTextChange}
               className="form-input"
               value={props.content}
               rows="6" />
@@ -14,7 +14,7 @@ export const Note = (props) => {
       </div>
       <div className="card-footer btn-right">
         {props.edit
-          ? <SaveButton updatePerson={props.updatePerson} />
+          ? <SaveButton updateTweet={props.updateTweet} />
           : <EditButton toggleEdit={props.toggleEdit} />}
       </div>
     </div>
@@ -34,7 +34,7 @@ const EditButton = (props) => {
 const SaveButton = (props) => {
   return (
     <button
-      onClick={props.updatePerson}
+      onClick={props.updateTweet}
       className="btn btn-primary">
       Save
     </button>

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import addPerson from '../actions/add_person';
-import getWantedList from '../actions/get_wanted_list';
+import addTweet from '../actions/add_tweet';
+import getTweetList from '../actions/get_tweet_list';
 import clearToast from '../actions/clear_toast';
-import WantedCard from './WantedCard';
-import RewardList from './RewardList';
-import AddUserModal from './AddUserModal';
+import TweetCard from './TweetCard';
+import UserList from './UserList';
+import AddTweet from './AddTweet';
 import Toast from './Toast';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -14,33 +14,22 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openModal: false,
-      newPersonName: '',
-      newPersonReason: '',
-      newPersonReward: '',
-      newPersonEyes: '',
-      newPersonNose: '',
-      newPersonMouth: '',
-      newPersonSkin: '#CE96FF'
+      newTweet: '',
+      newImage: null
     }
     this.toggleModalState = this.toggleModalState.bind(this);
-    this.handleNewPersonNameChange = this.handleNewPersonNameChange.bind(this);
-    this.handleNewPersonReasonChange = this.handleNewPersonReasonChange.bind(this);
-    this.handleNewPersonRewardChange = this.handleNewPersonRewardChange.bind(this);
-    this.handleNewPersonNoseChange = this.handleNewPersonNoseChange.bind(this);
-    this.handleNewPersonMouthChange = this.handleNewPersonMouthChange.bind(this);
-    this.handleNewPersonEyeChange = this.handleNewPersonEyeChange.bind(this);
-    this.handleSkinChange = this.handleSkinChange.bind(this);
-    this.handlePersonCreation = this.handlePersonCreation.bind(this);
+    this.handleNewTweetChange = this.handleNewTweetChange.bind(this);
+    this.handleNewImage = this.handleNewImage.bind(this);
+    this.handleTweetCreation = this.handleTweetCreation.bind(this);
     this.handleClearToast = this.handleClearToast.bind(this);
   }
   componentDidMount() {
-    this.props.getWantedList();
+    this.props.getTweetList();
   }
   renderUsers() {
     if(this.props.recentTweets) {
       return this.props.recentTweets.map(tweet => {
-        return <WantedCard key={tweet.name} tweet={tweet} />;
+        return <TweetCard key={tweet.name} tweet={tweet} />;
       });
     } else {
       return <LoadingSpinner />;
@@ -55,61 +44,27 @@ class App extends Component {
       })
     }
   }
-  handleNewPersonNameChange(e) {
+  handleNewTweetChange(e) {
     this.setState({
-      newPersonName: e.target.value
+      newTweet: e.target.value
     });
   }
-  handleNewPersonReasonChange(e) {
+  handleNewImage(e) {
     this.setState({
-      newPersonReason: e.target.value
-    });
-  }
-  handleNewPersonRewardChange(e) {
-    this.setState({
-      newPersonReward: e.target.value
-    });
-  }
-  handleNewPersonEyeChange(e) {
-    this.setState({
-      newPersonEyes: e.target.value
-    });
-  }
-  handleNewPersonNoseChange(e) {
-    this.setState({
-      newPersonNose: e.target.value
-    });
-  }
-  handleNewPersonMouthChange(e) {
-    this.setState({
-      newPersonMouth: e.target.value
-    });
-  }
-  handleSkinChange(e) {
-    this.setState({
-      newPersonSkin: e.target.value
+      newImage: e.target.files[0]
     });
   }
   clearFormAndCloseModal() {
     this.setState({
-      newPersonName: '',
-      newPersonReason: '',
-      newPersonReward: '',
-      newPersonEyes: 1,
-      newPersonNose: 1,
-      newPersonMouth: 1,
-      newPersonSkin: '#CE96FF',
+      newTweet: '',
       openModal: false
     });
   }
-  handlePersonCreation() {
-    const tweet = {
-      name: this.state.newPersonName,
-      image: `https://api.adorable.io/avatars/face/eyes${this.state.newPersonEyes}/nose${this.state.newPersonNose}/mouth${this.state.newPersonMouth}/${this.state.newPersonSkin.slice(1)}`,
-      reason: this.state.newPersonReason,
-      user: this.state.newPersonReward
-    };
-    this.props.addPerson(tweet);
+  handleTweetCreation() {
+    const tweet = new FormData();
+    tweet.append('image', this.state.newImage)
+    tweet.append('text', this.state.newTweet)
+    this.props.addTweet(tweet);
     this.clearFormAndCloseModal();
   }
   handleClearToast() {
@@ -136,27 +91,16 @@ class App extends Component {
               {this.renderUsers()}
             </div>
             <div className="column col-md-6">
-              <RewardList />
+              <UserList />
             </div>
           </div>
         </div>
-        <AddUserModal
-          createPerson={this.handlePersonCreation}
-          addToWantedList={this.handlePersonCreation}
-          skinTone={this.state.newPersonSkin}
-          onSkinChange={this.handleSkinChange}
-          onNoseChange={this.handleNewPersonNoseChange}
-          onMouthChange={this.handleNewPersonMouthChange}
-          onEyeChange={this.handleNewPersonEyeChange}
-          onRewardChange={this.handleNewPersonRewardChange}
-          onReasonChange={this.handleNewPersonReasonChange}
-          onNameChange={this.handleNewPersonNameChange}
-          name={this.state.newPersonName}
-          reason={this.state.newPersonReason}
-          user={this.state.newPersonReward}
-          eyes={this.state.newPersonEyes}
-          nose={this.state.newPersonNose}
-          mouth={this.state.newPersonMouth}
+        <AddTweet
+          createTweet={this.handleTweetCreation}
+          addToTweetList={this.handleTweetCreation}
+          onNewTweet={this.handleNewTweetChange}
+          onNewImage={this.handleNewImage}
+          text={this.state.newTweet}
           open={this.state.openModal}
           close={this.toggleModalState}/>
       </div>
@@ -175,8 +119,8 @@ function mapStateToProps(state) {
 //connects redux actions to props
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    getWantedList: getWantedList,
-    addPerson: addPerson,
+    getTweetList: getTweetList,
+    addTweet: addTweet,
     clearToast: clearToast
   }, dispatch);
 }
