@@ -12,9 +12,7 @@ def get_db():
     again.
     """
     if "db" not in g:
-        g.db = redis.Redis(
-            host=Config.REDIS_URL, port=Config.REDIS_PORT, db=0, decode_responses=True
-        )
+        g.db = redis.Redis(decode_responses=True)
 
     return g.db
 
