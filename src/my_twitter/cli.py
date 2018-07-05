@@ -44,4 +44,4 @@ def main():
     CORS(app, resources=r"/api/*")
     app.config["CORS_HEADERS"] = "Content-Type"
 
-    app.run()
+    app.run(host='0.0.0.0',port=50022)
