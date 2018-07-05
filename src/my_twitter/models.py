@@ -1,3 +1,5 @@
+import json
+
 from my_twitter import my_s3
 from my_twitter.config import Config
 from my_twitter.db import get_db
@@ -10,9 +12,10 @@ class User:
     FOLLOWER = "follower"
     FOLLOWING = "following"
 
-    def __init__(self, user_id, name, profile_pic=""):
+    def __init__(self, user_id, name, user_email, profile_pic=""):
         self.id = user_id
         self.name = name
+        self.email = user_email
         self.profile_pic = profile_pic
         self.follower = []
         self.following = []
@@ -29,8 +32,9 @@ class User:
     def get_user_by_id(user_id):
         db = get_db()
         user = User(user_id, User.get_username(user_id), User.get_profile_pic(user_id))
-        user.follower = db.smembers(User.get_follow_key(user_id, User.FOLLOWER))
-        user.following = db.smembers(User.get_follow_key(user_id, User.FOLLOWING))
+        user.follower = list(db.smembers(User.get_follow_key(user_id, User.FOLLOWER)))
+        user.following = list(db.smembers(User.get_follow_key(user_id, User.FOLLOWING)))
+        return user
 
     @staticmethod
     def get_follow_key(user_id, follow_type):
@@ -48,7 +52,13 @@ class User:
             user_id = User.create_user(client_id, user_name, user_pic)
         # return db.hget(Config.REDIS_USER, client_id)
         # return user_id
-        return User(user_id, User.get_username(user_id), User.get_profile_pic(user_id))
+        return User.get_user_by_id(user_id)
+
+    @staticmethod
+    def get_google_user(user_data):
+        return User.get_user(
+            user_data["googleId"], user_data["name"], user_data["imageUrl"]
+        )
 
     @staticmethod
     def create_user(client_id, username, pic):
@@ -67,9 +77,15 @@ class User:
         db.hset(user_id, User.PROFILE_PIC, pic)
 
     @staticmethod
-    def user_jsonify(user_id):
+    def user_jsonify(user):
         db = get_db()
-        return {"id": user_id, "name": db.hget(Config.REDIS_USER, user_id)}
+        return {
+            User.ID: user.id,
+            User.NAME: user.name,
+            User.PROFILE_PIC: user.profile_pic,
+            User.FOLLOWING: user.following,
+            User.FOLLOWER: user.follower,
+        }
 
 
 class Tweet:

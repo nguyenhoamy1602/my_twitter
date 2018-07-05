@@ -1,33 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import functools
 import os
 
-from flask import (
-    Blueprint,
-    flash,
-    g,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-    jsonify,
-)
+from flask import Blueprint, redirect, request, session, url_for, jsonify
 
-from my_twitter.cli import app
-from my_twitter.config import Config
-from my_twitter.db import get_db
 from my_twitter.models import User
 from my_twitter.utils.token import generate_token, verify_token
-
-bp = Blueprint("auth", __name__, url_prefix="/api/auth")
-
-import requests
-
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+
+bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
@@ -73,7 +56,19 @@ SCOPES = [
 #             g.user = None
 
 
-@bp.route("/get_token")
+@bp.route("/", methods=["POST"])
+def get_token():
+    user_data = request.get_json()
+    print(user_data)
+    user = User.get_google_user(user_data)
+    if user:
+        json_user = User.user_jsonify(user)
+        print(json_user)
+        return jsonify(token=generate_token(user), user=json_user)
+    return jsonify(error=True), 403
+
+
+@bp.route("/", methods=["GET"])
 def authorize():
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
 

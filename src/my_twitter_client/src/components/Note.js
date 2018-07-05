@@ -10,7 +10,7 @@ export const Note = (props) => {
               className="form-input"
               value={props.content}
               rows="6" />
-          : <p>{props.content}</p>}
+          : <p>{props.text}</p>}
       </div>
       <div className="card-footer btn-right">
         {props.edit

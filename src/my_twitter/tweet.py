@@ -38,7 +38,7 @@ def delete_tweet():
 
 
 @bp.route("/", methods=["GET", "OPTIONS"])
-@requires_auth
+# @requires_auth
 def get_tweet():
     db = get_db()
     tweet_list = []

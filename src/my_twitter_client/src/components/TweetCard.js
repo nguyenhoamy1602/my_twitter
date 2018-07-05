@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import updateTweet from '../actions/update_tweet';
-import deleteTweet from '../actions/delete_tweet';
+import updateTweet from '../redux/actions/update_tweet';
+import deleteTweet from '../redux/actions/delete_tweet';
 import { Note } from './Note';
 
 class TweetCard extends Component {
@@ -57,10 +57,11 @@ class TweetCard extends Component {
     const tweet = this.props.tweet;
     return (
       <div className="card">
+      {this.props.auth.isAuthenticated && this.props.auth.user.name == this.props.tweet.user ?
         <button
           className="btn btn-clear tooltip"
           data-tooltip="Delete because tweet has been captured."
-          onClick={this.handleDeleteTweet}></button>
+          onClick={this.handleDeleteTweet}></button> : null}
         <div className="card-header">
           <figure
             className="avatar avatar-xl tooltip" data-tooltip={tweet.user}>
@@ -68,12 +69,14 @@ class TweetCard extends Component {
           </figure>
           <h4 className="card-title">{tweet.user}</h4>
         </div>
+        {this.props.auth.isAuthenticated && this.props.auth.user.name == this.props.tweet.user ?
         <Note
           toggleEdit={this.toggleEdit}
           updateTweet={this.handleUpdateTweet}
           edit={this.state.editText}
           handleTextChange={this.handleTextChange}
-          content={this.state.text} />
+          content={this.state.text}
+          text={tweet.text}/> : <div>{tweet.text}</div>}
           {this.renderTweetImage()}
           <small className="date">
             <span>Date: </span> {tweet.date}
@@ -83,7 +86,11 @@ class TweetCard extends Component {
   }
 }
 
-
+function mapStateToProps(state) {
+  return {
+    auth: state.auth
+  }
+}
 
 //connects redux actions to props
 function mapDispatchToProps(dispatch) {
@@ -93,4 +100,4 @@ function mapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-export default connect(null, mapDispatchToProps)(TweetCard);
+export default connect(mapStateToProps, mapDispatchToProps)(TweetCard);

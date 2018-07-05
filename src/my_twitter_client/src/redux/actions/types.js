@@ -7,3 +7,7 @@ export const CLEAR_TOAST = 'clear_toast';
 export const TOKEN = "eyJhbGciOiJIUzI1NiIsImlhdCI6MTUzMDUxMDIzMywiZXhwIjoxNTMxNzE5ODMzfQ.eyJpZCI6IlVzZXI6MSIsIm5hbWUiOiJOZ3V5ZW4gSG9hIE15In0.Ly_7n37O4F-E-Khtku567Roj8PadP4LwuXCIymiLyds";
 export const URL = "http://localhost:5000/api";
 export const TWEET_URL = URL + "/tweet/"
+export const AUTH_URL = URL + "/auth/"
+
+export const SET_CURRENT_USER = 'set_current_user';
+export const LOG_OUT_USER = "log_out_user";
