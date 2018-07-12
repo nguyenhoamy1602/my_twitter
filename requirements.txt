@@ -25,7 +25,6 @@ jmespath==0.9.3
 MarkupSafe==1.0
 minio==4.0.2
 more-itertools==4.2.0
-my-twitter==1.0.0
 mypy==0.610
 oauthlib==2.1.0
 pluggy==0.6.0
@@ -46,3 +45,4 @@ typed-ast==1.1.0
 uritemplate==3.0.0
 urllib3==1.23
 Werkzeug==0.14.1
+.

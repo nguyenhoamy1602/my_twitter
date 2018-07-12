@@ -8,7 +8,7 @@ __pycache__
 client_secret.json
 node_modules/
 
-
+*.rdb
 
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
