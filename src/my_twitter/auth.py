@@ -2,8 +2,8 @@
 
 import os
 
-import google.oauth2.credentials
-import googleapiclient.discovery
+#import google.oauth2.credentials
+#import googleapiclient.discovery
 from flask import Blueprint, redirect, request, session, url_for, jsonify
 
 from my_twitter.utils.token import generate_token
