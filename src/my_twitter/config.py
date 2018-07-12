@@ -35,15 +35,15 @@ class Config(object):
         }
     )
 
-    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY","dev")
     BUCKET_HOST = os.environ.get("BUCKET_HOST")
     BUCKET_ACCESS_KEY = os.environ.get("BUCKET_ACCESS_KEY")
     BUCKET_SECRET_KEY = os.environ.get("BUCKET_SECRET_KEY")
     # BUCKET_SECURE = os.environ.get("MINIO_SECURE")
-    BUCKET_NAME = os.environ.get("BUCKET_NAME")
+    BUCKET_NAME = os.environ.get("BUCKET_NAME","interns-my")
 
     REDIS_PORT = os.environ.get("REDIS_PORT")
-    REDIS_URL = os.environ.get("REDIS_URL")
+    REDIS_URL = os.environ.get("REDIS_URL","redis")
 
     REDIS_TWEET = "Tweet"
     REDIS_USER = "User"
