@@ -8,6 +8,7 @@ from my_twitter.config import Config
 from my_twitter.db import get_db
 from my_twitter.models import User
 from my_twitter.utils.token import requires_auth
+from my_twitter.utils.user_utils import get_profile_pic
 
 bp = Blueprint("tweet", __name__, url_prefix="/api/tweet")
 
@@ -97,7 +98,7 @@ def save_tweet_to_db(tweet_id, tweet, has_image):
     date = str(time.time())
     db.hset(tweet_id, TEXT, tweet[TEXT])
     db.hset(tweet_id, USER, g.current_user["name"])
-    db.hset(tweet_id, USER_IMAGE, User.get_profile_pic(g.current_user["id"]))
+    db.hset(tweet_id, USER_IMAGE, get_profile_pic(g.current_user["id"]))
     db.hset(tweet_id, HAS_IMAGE, has_image)
     db.hset(tweet_id, DATE, date)
 

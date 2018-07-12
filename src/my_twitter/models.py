@@ -3,6 +3,7 @@ import json
 from my_twitter import my_s3
 from my_twitter.config import Config
 from my_twitter.db import get_db
+from my_twitter.utils.user_utils import get_follow_key
 
 
 class User:
@@ -23,7 +24,7 @@ class User:
         self.following = []
 
     def follow(self, user_id):
-        get_db().sadd(User.get_follow_key(self.id, User.FOLLOWING), user_id)
+        get_db().sadd(get_follow_key(self.id, User.FOLLOWING), user_id)
         get_db().sadd(user_id, User.FOLLOWER, self.id)
 
     def json(self):
